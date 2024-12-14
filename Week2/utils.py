@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from scipy.ndimage import map_coordinates
 import random
 import plotly.graph_objects as go
+import math
+import sys
 
 def plot_img(img, do_not_use=[0]):
     plt.figure(do_not_use[0])
@@ -98,7 +100,7 @@ def DLT_homography(points1, points2):
         A.append([0,0,0,-w*x,-w*y,-w*z,v*x,v*y,v*z])
         A.append([w*x, w*y, w*z, 0, 0, 0, -u*x, -u*y, -u*z])
         A.append( [-v*x, -v*y, -v*z, u*x, u*y, u*z, 0, 0, 0])
-        
+
     # Convert A to array
     A = np.asarray(A)
     U, d, Vt = np.linalg.svd(A)
@@ -109,6 +111,7 @@ def DLT_homography(points1, points2):
     
     # Denormalise
     H = np.linalg.inv(T2) @ H @ T1
+    
 
 
     return H
@@ -122,8 +125,14 @@ def Inliers(H, points1, points2, th):
     
     
     # ToDo: complete this code .......
+
+    points1_transformed = H @points1
     
-    return
+    error = np.linalg.norm(points2 - points1_transformed, axis=0)
+    inliers_mask = error < th
+    inliers_indices = np.where(inliers_mask)[0]
+    
+    return inliers_indices
 
 def Ransac_DLT_homography(points1, points2, th, max_it):
     
