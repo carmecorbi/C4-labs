@@ -74,6 +74,42 @@ def Normalise_last_coord(x):
 def DLT_homography(points1, points2):
     
     # ToDo: complete this code .......
+    # Normalize points in both images
+    points1_n = Normalise_last_coord(points1)
+    points2_n = Normalise_last_coord(points2)
+
+    m1,s1 = np.mean(points1_n,1), np.std(points1_n)
+    s1 = np.sqrt(2)/s1
+    T1 = np.array([[s1, 0, -s1*m1[0]], [0, s1, -s1*m1[1]], [0, 0, 1]])
+
+    m2,s2 = np.mean(points2_n,1), np.std(points2_n)
+    s2 = np.sqrt(2)/s2
+    T2 = np.array([[s2, 0, -s2*m2[0]], [0, s2, -s2*m2[1]], [0, 0, 1]])
+
+    points1n = T1 @ points1_n
+    points2n = T2 @ points2_n
+
+    A = []
+    n = points1.shape[1]
+
+    for i in range(n):
+        x,y,z = points1n[0,i], points1n[1,i], points1n[2,i]
+        u,v,w = points2n[0,i], points2n[1,i], points2n[2,i]
+        A.append([0,0,0,-w*x,-w*y,-w*z,v*x,v*y,v*z])
+        A.append([w*x, w*y, w*z, 0, 0, 0, -u*x, -u*y, -u*z])
+        A.append( [-v*x, -v*y, -v*z, u*x, u*y, u*z, 0, 0, 0])
+        
+    # Convert A to array
+    A = np.asarray(A)
+    U, d, Vt = np.linalg.svd(A)
+
+    # Extract homography (last line of Vt)
+    L = Vt[-1, :] / Vt[-1, -1]
+    H = L.reshape(3, 3)
+    
+    # Denormalise
+    H = np.linalg.inv(T2) @ H @ T1
+
 
     return H
 
