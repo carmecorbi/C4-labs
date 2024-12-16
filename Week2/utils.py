@@ -77,6 +77,7 @@ def DLT_homography(points1, points2):
     
     # ToDo: complete this code .......
     # Normalize points in both images
+
     points1_n = Normalise_last_coord(points1)
     points2_n = Normalise_last_coord(points2)
 
@@ -91,6 +92,7 @@ def DLT_homography(points1, points2):
     points1n = T1 @ points1_n
     points2n = T2 @ points2_n
 
+
     A = []
     n = points1.shape[1]
 
@@ -99,9 +101,10 @@ def DLT_homography(points1, points2):
         u,v,w = points2n[0,i], points2n[1,i], points2n[2,i]
         A.append([0,0,0,-w*x,-w*y,-w*z,v*x,v*y,v*z])
         A.append([w*x, w*y, w*z, 0, 0, 0, -u*x, -u*y, -u*z])
-        A.append( [-v*x, -v*y, -v*z, u*x, u*y, u*z, 0, 0, 0])
+      
 
     # Convert A to array
+
     A = np.asarray(A)
     U, d, Vt = np.linalg.svd(A)
 
@@ -126,9 +129,12 @@ def Inliers(H, points1, points2, th):
     
     # ToDo: complete this code .......
 
-    points1_transformed = H @points1
+    points1_transformed = Normalise_last_coord(H @points1)
+    points2_transfomed = Normalise_last_coord(np.linalg.inv(H)@points2)
+    points1 = Normalise_last_coord(points1)
+    points2 = Normalise_last_coord(points2)
     
-    error = np.linalg.norm(points2 - points1_transformed, axis=0)
+    error = np.sqrt((np.sum((points2[:-1] - points1_transformed[:-1])**2, axis=0) + np.sum((points2_transfomed[:-1] - points1[:-1])**2, axis=0)))
     inliers_mask = error < th
     inliers_indices = np.where(inliers_mask)[0]
     
