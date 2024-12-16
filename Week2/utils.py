@@ -83,7 +83,7 @@ def DLT_homography(points1, points2):
     points1_n = Normalise_last_coord(points1)
     points2_n = Normalise_last_coord(points2)
 
-    # 2. Normnalize them by transforming them so that their mean is 0 (origin)
+    # 2. Normalize them by transforming them so that their mean is 0 (origin)
     # and the avg. distance from the origin is sqrt(2) to improve stability
     #   - T1 and T2 are the transformation matrices defined to normalize poinst1
     #     and points2, respectively
