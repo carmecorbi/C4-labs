@@ -76,11 +76,17 @@ def Normalise_last_coord(x):
 def DLT_homography(points1, points2):
     
     # ToDo: complete this code .......
-    # Normalize points in both images
 
+    # Normalize points in both images 
+    
+    # 1. Convert to homogeneous coordinates (normalization --> from (x,y,w) to (x/w, y/w, 1))
     points1_n = Normalise_last_coord(points1)
     points2_n = Normalise_last_coord(points2)
 
+    # 2. Normnalize them by transforming them so that their mean is 0 (origin)
+    # and the avg. distance from the origin is sqrt(2) to improve stability
+    #   - T1 and T2 are the transformation matrices defined to normalize poinst1
+    #     and points2, respectively
     m1,s1 = np.mean(points1_n,1), np.std(points1_n)
     s1 = np.sqrt(2)/s1
     T1 = np.array([[s1, 0, -s1*m1[0]], [0, s1, -s1*m1[1]], [0, 0, 1]])
@@ -89,10 +95,15 @@ def DLT_homography(points1, points2):
     s2 = np.sqrt(2)/s2
     T2 = np.array([[s2, 0, -s2*m2[0]], [0, s2, -s2*m2[1]], [0, 0, 1]])
 
+    # Apply the normalization transform to the given sets of points
     points1n = T1 @ points1_n
     points2n = T2 @ points2_n
 
 
+    # Note: For each point correspondence, 2 linear equations are defined:
+    #           1. x(h_31·x + h_32·y + h_33) - (h_11·x + h_12·y + h_13) = 0  -->  (x - x' = 0)
+    #           2. y(h_31·x + h_32·y + h_33) - (h_21·x + h_22·y + h_23) = 0  -->  (y - y' = 0)
+    # Then can define the system of equations in a matricial form: Ah = 0
     A = []
     n = points1.shape[1]
 
@@ -148,6 +159,7 @@ def Ransac_DLT_homography(points1, points2, th, max_it):
     best_inliers = np.empty(1)
     
     while it < max_it:
+        # Take 4 point correspondences between the 2 images (randomly chosen)
         indices = random.sample(range(1, Npts), 4)
         H = DLT_homography(points1[:,indices], points2[:,indices])
         inliers = Inliers(H, points1, points2, th)
