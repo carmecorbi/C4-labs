@@ -40,6 +40,7 @@ def apply_H_fixed_image_size(I, H, corners):
     Hc2 = H @ c2
     Hc3 = H @ c3
     Hc4 = H @ c4
+    # Normalize them 
     Hc1 = Hc1 / Hc1[2]
     Hc2 = Hc2 / Hc2[2]
     Hc3 = Hc3 / Hc3[2]
