@@ -183,7 +183,7 @@ def Ransac_DLT_homography(points1, points2, th, max_it):
     
     while it < max_it:
         # Take 4 point correspondences between the 2 images (randomly chosen)
-        indices = random.sample(range(1, Npts), 4)
+        indices = random.sample(range(Npts), 4)
         # Estimate the homography matrix H using the DLT algorithm
         H = DLT_homography(points1[:,indices], points2[:,indices])
         # Get the indices of the points that are considered inliers
