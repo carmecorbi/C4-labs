@@ -104,8 +104,8 @@ def DLT_homography(points1, points2):
     # Note: For each point correspondence ((x,y,z) in the 1st image and (u,v,w) in the 2nd image, 
     #       where z and w are 1 after the normalization step), 2 linear equations are defined:
     #
-    #           1. (h_11·x + h_12·y + h_13·1) - u(h_31·x + h_32·y + h_33·1) = 0  
-    #           2. (h_21·x + h_22·y + h_23·1) - v(h_31·x + h_32·y + h_33·1) = 0  
+    #           1. (-1·(h_4·x + h_5·y + h_6·1) + v3(h_7·x + h_8·y + h_9·1)) = 0  
+    #           2. ( 1·(h_1·x + h_2·y + h_3·1) - u·(h_7·x + h_8·y + h_9·1)) = 0  
     #
     # Then we can define the system of equations in a matricial form: Ah = 0
     A = []
@@ -116,9 +116,9 @@ def DLT_homography(points1, points2):
         x,y,z = points1n[0,i], points1n[1,i], points1n[2,i]
         u,v,w = points2n[0,i], points2n[1,i], points2n[2,i]
         # From the 1st equation (w=1 and z=1)
-        A.append([w*x, w*y, w*z, 0, 0, 0, -u*x, -u*y, -u*z])
-        # From the 2nd equation
         A.append([0, 0, 0, -w*x, -w*y, -w*z, v*x, v*y, v*z])
+        # From the 2nd equation
+        A.append([w*x, w*y, w*z, 0, 0, 0, -u*x, -u*y, -u*z])
         
       
     # Note: Solve Ah=0 using the SVD, so that we obtain A = U·D·V^T and the
