@@ -5,7 +5,7 @@ import cv2
 import matplotlib
 from matplotlib import pyplot as plt
 from operator import itemgetter
-from utils import Ransac_DLT_homography
+from utils import Ransac_DLT_homography, apply_H_fixed_image_size, plot_img
 
 
 def plot_contour(H, logo_img, dst_img, offset_x=0):
@@ -156,13 +156,30 @@ def detect_logo(logo_img, dst_img, verbose=False, threshold=0.7, ransac_threshol
 if __name__ == '__main__':
     # Read the images in grayscale
     logo_img = cv2.imread('Data/logos/logoUPF.png')  # Notice IMREAD_GRAYSCALE is platform dependent
-    logo_img = cv2.cvtColor(logo_img, cv2.COLOR_BGR2GRAY)
+    logo_img_gray = cv2.cvtColor(logo_img, cv2.COLOR_BGR2GRAY)
 
-    blg_img = cv2.imread('Data/logos/UPFstand.jpg')
-    blg_img = cv2.cvtColor(blg_img, cv2.COLOR_BGR2GRAY)
+    blg_img = cv2.imread('Data/logos/UPFbuilding.jpg')
+    blg_img_gray = cv2.cvtColor(blg_img, cv2.COLOR_BGR2GRAY)
 
-    # Detect the logo in the building image
-    detect_logo(logo_img, blg_img, verbose=True)
+    # Step 1: Detect the logo in the building image
+    H, inliers_matches, points1, points2 = detect_logo(logo_img_gray, blg_img_gray, verbose=True)
+
+    # Step 2: Transform the corners using the homography
+    logo_img = cv2.imread('Data/logos/logo_master.png')  # Notice IMREAD_GRAYSCALE is platform dependent
+    logo_img = cv2.resize(logo_img, (123, 122))
+
+    corners = np.array([0, blg_img.shape[1] - 1, 0, blg_img.shape[0] - 1], dtype=np.float32).T
+    imgA_w = apply_H_fixed_image_size(logo_img, H, corners)
+    imgB_w = apply_H_fixed_image_size(blg_img, np.eye(3), corners)
+
+    result_img = np.where(imgA_w > 0, imgA_w, imgB_w)
+    result_img = cv2.cvtColor(result_img, cv2.COLOR_BGR2RGB)
+
+    plot_img(result_img)
+    fig = matplotlib.pyplot.gcf()
+    fig.set_size_inches(18.5, 10.5)
+    plt.show()
+
 
 
 
